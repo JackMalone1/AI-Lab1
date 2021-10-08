@@ -90,7 +90,7 @@ void Game::processKeys(sf::Event t_event)
 	{
 		m_exitGame = true;
 	}
-	m_player.processEvents(t_event);
+	
 }
 
 /// <summary>

@@ -10,10 +10,7 @@ void Npc::init()
 	m_body.setScale(sf::Vector2f(4.0f, 4.0f));
 	m_body.setPosition(sf::Vector2f(200, 150));
 
-	int min = -100;
-	int max = 100;
-
-	m_velocity = sf::Vector2f(min + (std::rand() % (max - min + 1)), min + (std::rand() % (max - min + 1)));
+	m_velocity = sf::Vector2f(0.0f, 0.0f);
 }
 
 void Npc::processOutOfBounds()
@@ -37,6 +34,13 @@ void Npc::processOutOfBounds()
 	}
 }
 
+sf::Vector2f Npc::normaliseVector(sf::Vector2f t_inputVector)
+{
+	sf::Vector2f result = sf::Vector2f(0.0f, 0.0f);
+	result = t_inputVector / sqrt((t_inputVector.x * t_inputVector.x) + (t_inputVector.y * t_inputVector.y));
+	return result;
+}
+
 Npc::Npc()
 {
 	init();
@@ -52,4 +56,61 @@ void Npc::update(sf::Time t_deltaTime)
 void Npc::draw(sf::RenderWindow& t_window)
 {
 	t_window.draw(m_body);
+}
+
+void Npc::kinematicSeek(sf::Vector2f t_targetPosition)
+{
+	if (t_targetPosition != m_body.getPosition())
+	{
+		sf::Vector2f steeringLinear = t_targetPosition - m_body.getPosition();
+		steeringLinear = normaliseVector(steeringLinear);
+		steeringLinear *= maxSpeed;
+		m_velocity = steeringLinear;
+	}
+}
+
+void Npc::kinematicArrive(sf::Vector2f t_targetPosition)
+{
+	if (t_targetPosition != m_body.getPosition())
+	{
+		sf::Vector2f steeringLinear = t_targetPosition - m_body.getPosition();
+		float magnitude = sqrt((steeringLinear.x * steeringLinear.x) + (steeringLinear.y * steeringLinear.y));
+		if (magnitude < arrivalRadius)
+		{
+			speed = 0;
+		}
+		else if (magnitude > 8)
+		{
+			speed = maxSpeed;
+		}
+		else
+		{
+			speed = maxSpeed * (magnitude / 8);
+		}
+		m_velocity = steeringLinear;
+		m_velocity = normaliseVector(m_velocity);
+		m_velocity *= maxSpeed;
+	}
+}
+
+void Npc::kinematicWander()
+{
+	float rotationChange = rand() % 40 - 20;
+	float rotation = m_body.getRotation() + rotationChange;
+
+	m_direction.x = cosf(rotation * (3.14f / 180.0f));
+	m_direction.y = sinf(rotation * (3.14f / 180.0f));
+	m_velocity = sf::Vector2f((m_direction.x * speed), (m_direction.y * speed));
+	m_body.setRotation(rotation);
+}
+
+void Npc::kinematicFlee(sf::Vector2f t_fleePosition)
+{
+	if (t_fleePosition != m_body.getPosition())
+	{
+		sf::Vector2f steeringLinear = t_fleePosition - m_body.getPosition();
+		steeringLinear = normaliseVector(steeringLinear);
+		steeringLinear *= maxSpeed;
+		m_velocity = steeringLinear;
+	}
 }

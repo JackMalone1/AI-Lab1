@@ -9,11 +9,16 @@ void Player::init()
 	m_body.setTexture(m_texture);
 	m_body.setScale(sf::Vector2f(4.0f, 4.0f));
 	m_body.setPosition(sf::Vector2f(400, 300));
+	m_body.setOrigin(m_body.getGlobalBounds().width / 2.0f, m_body.getGlobalBounds().height / 2.0f);
+	m_body.setRotation(90.0f);
 
-	int min = -100;
-	int max = 100;
-
-	m_velocity = sf::Vector2f(min + (std::rand() % (max - min + 1)), min + (std::rand() % (max - min + 1)));
+	m_acceleration = 10.0f;
+	m_speed = 0.0f;
+	m_rotationSpeed = 5.0f;
+	m_maxSpeed = 10.0f;
+	m_minSpeed = -5.0f;
+	
+	m_velocity = sf::Vector2f(0.0f, 0.0f);
 }
 
 void Player::processOutOfBounds()
@@ -39,22 +44,27 @@ void Player::processOutOfBounds()
 
 void Player::processMaxSpeed()
 {
-	if (m_velocity.x > 300.0f)
-	{
-		m_velocity.x = 300.0f;
-	}
-	else if (m_velocity.x < -300.0f)
-	{
-		m_velocity.x = -300.0f;
-	}
+	if (m_speed > m_maxSpeed) m_speed = m_maxSpeed;
+	if (m_speed < m_minSpeed) m_speed = m_minSpeed;
+}
 
-	if (m_velocity.y > 300.0f)
+void Player::resetVelocity()
+{
+	int min = -100;
+	int max = 100;
+
+	m_velocity = sf::Vector2f(min + (std::rand() % (max - min + 1)), min + (std::rand() % (max - min + 1)));
+}
+
+void Player::stopPlayer()
+{
+	if ((m_velocity.x < 1 && m_velocity.x > 0) || (m_velocity.y < 1 && m_velocity.y > 0))
 	{
-		m_velocity.y = 300.0f;
+		m_velocity = sf::Vector2f(0.0f, 0.0f);
 	}
-	else if (m_velocity.y < -300.0f)
+	else if ((m_velocity.x > -1 && m_velocity.x < 0) || (m_velocity.y > -1 && m_velocity.y < 0))
 	{
-		m_velocity.y = -300.0f;
+		m_velocity = sf::Vector2f(0.0f, 0.0f);
 	}
 }
 
@@ -65,10 +75,32 @@ Player::Player()
 
 void Player::update(sf::Time t_deltaTime)
 {
-	processMaxSpeed();
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+	{
+		m_speed += m_acceleration * t_deltaTime.asSeconds();
+		processMaxSpeed();
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+	{
+		m_speed -= m_acceleration * t_deltaTime.asSeconds();
+		processMaxSpeed();
+		//stopPlayer();
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+	{
+		m_body.setRotation(m_body.getRotation() - m_speed * m_rotationSpeed * t_deltaTime.asSeconds());
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+	{
+		m_body.setRotation(m_body.getRotation() + m_speed * m_rotationSpeed * t_deltaTime.asSeconds());
+	}
+
+	m_direction.x = cosf(m_body.getRotation() * (3.14f / 180.0f));
+	m_direction.y = sinf(m_body.getRotation() * (3.14f / 180.0f));
+	m_velocity = sf::Vector2f((m_direction.x * m_speed ), (m_direction.y * m_speed));
 
 
-	m_body.move(m_velocity * t_deltaTime.asSeconds());
+	m_body.move(m_velocity);
 
 	processOutOfBounds();
 }
@@ -76,42 +108,4 @@ void Player::update(sf::Time t_deltaTime)
 void Player::draw(sf::RenderWindow& t_window)
 {
 	t_window.draw(m_body);
-}
-
-void Player::processEvents(sf::Event t_event)
-{
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-	{
-		if (m_velocity.x == 0.0f)
-		{
-			int min = -100;
-			int max = 100;
-
-			m_velocity = sf::Vector2f(min + (std::rand() % (max - min + 1)), min + (std::rand() % (max - min + 1)));
-		}
-		m_velocity.x *= 1.10;
-		m_velocity.y *= 1.10;
-	}
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-	{
-		if (m_velocity.x == 0.0f)
-		{
-			int min = -100;
-			int max = 100;
-
-			m_velocity = sf::Vector2f(min + (std::rand() % (max - min + 1)), min + (std::rand() % (max - min + 1)));
-		}
-
-		m_velocity.x *= 0.8;
-		m_velocity.y *= 0.8;
-
-		if ((m_velocity.x < 1 && m_velocity.x > 0) || (m_velocity.y < 1 && m_velocity.y > 0))
-		{
-			m_velocity = sf::Vector2f(0.0f, 0.0f);
-		}
-		else if ((m_velocity.x > -1 && m_velocity.x < 0) || (m_velocity.y > -1 && m_velocity.y < 0))
-		{
-			m_velocity = sf::Vector2f(0.0f, 0.0f);
-		}
-	}
 }
