@@ -32,7 +32,10 @@ private:
 
 	sf::RenderWindow m_window; // main SFML window
 	Player m_player;
-	Npc m_npc;
+	Npc m_npcWander;
+	Npc m_npcSeek;
+	Npc m_npcArrive;
+	Npc m_npcFlee;
 	bool m_exitGame; // control exiting game
 
 };

@@ -13,8 +13,8 @@ private:
 	sf::Vector2f m_velocity;
 	sf::Vector2f m_direction;
 
-	float minSpeed = 1;
-	float maxSpeed = 4;
+	float minSpeed = -5.0f;
+	float maxSpeed = 10.0f;
 	float speed;
 	float acceleration;
 	float rotationSpeed;
@@ -22,11 +22,18 @@ private:
 	float targetSpeed = 0;
 
 	void init();
+	void setUpSprites();
 	void processOutOfBounds();
 
 	sf::Vector2f normaliseVector(sf::Vector2f t_inputVector);
+
+	bool wander = false;
+	bool seek = false;
+	bool flee = false;
+
+	sf::Clock timer;
 public:
-	Npc();
+	Npc(int t_type);
 	void update(sf::Time t_deltaTime);
 	void draw(sf::RenderWindow& t_window);
 	void kinematicSeek(sf::Vector2f t_targetPosition);

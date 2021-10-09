@@ -2,6 +2,16 @@
 
 void Npc::init()
 {
+	setUpSprites();
+
+	m_velocity = sf::Vector2f(0.0f, 0.0f);
+	speed = 4.0f;
+
+	if (wander) kinematicWander();
+}
+
+void Npc::setUpSprites()
+{
 	if (!m_texture.loadFromFile("ASSETS\\IMAGES\\tile_0008.png"))
 	{
 		std::cout << "Error loading sprite from file for npc" << std::endl;
@@ -9,8 +19,7 @@ void Npc::init()
 	m_body.setTexture(m_texture);
 	m_body.setScale(sf::Vector2f(4.0f, 4.0f));
 	m_body.setPosition(sf::Vector2f(200, 150));
-
-	m_velocity = sf::Vector2f(0.0f, 0.0f);
+	m_body.setOrigin(m_body.getGlobalBounds().width / 2.0f, m_body.getGlobalBounds().height / 2.0f);
 }
 
 void Npc::processOutOfBounds()
@@ -41,13 +50,35 @@ sf::Vector2f Npc::normaliseVector(sf::Vector2f t_inputVector)
 	return result;
 }
 
-Npc::Npc()
+Npc::Npc(int t_type)
 {
+	switch (t_type)
+	{
+	case 1:
+		wander = true;
+	case 2:
+		seek = true;
+	case 3:
+		flee = true;
+	default:
+		break;
+	}
+
+
 	init();
 }
 
 void Npc::update(sf::Time t_deltaTime)
 {
+	if (wander)
+	{
+		if (timer.getElapsedTime().asSeconds() > 2)
+		{
+			kinematicWander();
+			timer.restart();
+		}
+	}
+
 	m_body.move(m_velocity * t_deltaTime.asSeconds());
 
 	processOutOfBounds();
@@ -66,6 +97,7 @@ void Npc::kinematicSeek(sf::Vector2f t_targetPosition)
 		steeringLinear = normaliseVector(steeringLinear);
 		steeringLinear *= maxSpeed;
 		m_velocity = steeringLinear;
+		m_body.setRotation(atan2f(steeringLinear.y, steeringLinear.x) * (180.0f / 3.14f));
 	}
 }
 

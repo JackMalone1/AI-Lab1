@@ -14,7 +14,7 @@ void Player::init()
 
 	m_acceleration = 10.0f;
 	m_speed = 0.0f;
-	m_rotationSpeed = 5.0f;
+	m_rotationSpeed = 8.0f;
 	m_maxSpeed = 10.0f;
 	m_minSpeed = -5.0f;
 	

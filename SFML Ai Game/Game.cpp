@@ -18,7 +18,11 @@
 /// </summary>
 Game::Game() :
 	m_window{ sf::VideoMode{ 800U, 600U, 32U }, "SFML Game" },
-	m_exitGame{false} //when true game will exit
+	m_exitGame{false},
+	m_npcWander(1),
+	m_npcSeek(2),
+	m_npcArrive(2),
+	m_npcFlee(3)
 {
 	srand(time(NULL));
 }
@@ -104,7 +108,13 @@ void Game::update(sf::Time t_deltaTime)
 		m_window.close();
 	}
 	m_player.update(t_deltaTime);
-	m_npc.update(t_deltaTime);
+	m_npcWander.update(t_deltaTime);
+	m_npcSeek.update(t_deltaTime);
+	m_npcSeek.kinematicSeek(m_player.getPosition());
+	m_npcArrive.update(t_deltaTime);
+	m_npcArrive.kinematicArrive(m_player.getPosition());
+	m_npcFlee.update(t_deltaTime);
+	m_npcFlee.kinematicFlee(m_player.getPosition());
 }
 
 /// <summary>
@@ -114,6 +124,9 @@ void Game::render()
 {
 	m_window.clear(sf::Color::White);
 	m_player.draw(m_window);
-	m_npc.draw(m_window);
+	m_npcWander.draw(m_window);
+	m_npcSeek.draw(m_window);
+	m_npcArrive.draw(m_window);
+	m_npcFlee.draw(m_window);
 	m_window.display();
 }
